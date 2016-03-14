@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<link rel="stylesheet/less" type="text/css" href="style.less">
 	
+	<script>less = {logLevel: 1};</script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.3/less.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
@@ -30,16 +31,31 @@
 		</div>
 		
 		<div ng-show="self.loaded" ng-cloak>
+			<!-- [TOP_MENU] -->
+			<nav id="top_menu" class="row">
+				<div class="col-xs-6">
+					<p class="text-muted">Click a calendar date below to get started.</p>
+				</div>
+				<div class="col-xs-6 text-right">
+					<button class="btn btn-default" ng-click="self.clear_season(self.cseason)"><i class="fa fa-calendar"></i> Clear {{self.cseason.name}}</button>				
+					<button class="btn btn-default" ng-click="self.clear_all()"><i class="fa fa-trash"></i> Clear All</button>
+					<button class="btn btn-success" ng-click="self.open_crop_info()"><i class="fa fa-pagelines"></i> Crop Info</button>				
+				</div>
+			</nav>
+			<!-- [/TOP_MENU] -->
+			
+			
 			<!-- [SEASON_PICKER] -->
 			<div id="season_picker" class="row">
 				<div class="col-xs-3" ng-repeat="season in self.seasons">
-					<div class="season" ng-class="{'active': season==self.cseason}" ng-click="self.set_season(season)">
-						<div class="name">{{season}}</div>
-						<div class="profit">{{self.data.totals.season[self.seasons.indexOf(season)].profit>0 && '+' || ''}}{{self.data.totals.season[self.seasons.indexOf(season)].get_profit(1)}}g</div>
+					<div class="season" ng-class="{'active': season.id==self.cseason.id}" ng-click="self.set_season(season.index)">
+						<div class="name">{{season.name}}</div>
+						<div class="profit">{{self.data.totals.season[season.index].profit>0 && '+' || ''}}{{self.data.totals.season[season.index].get_profit(1)}}g</div>
 					</div>
 				</div>
 			</div>
 			<!-- [/SEASON_PICKER] -->
+			
 			
 			<!-- [CALENDAR] -->
 			<div id="calendar">
@@ -52,8 +68,8 @@
 					<div class="day_name">Sa</div>
 					<div class="day_name">Su</div>
 				</div>
-				<div class="season" ng-repeat="season in self.seasons" ng-show="season==self.cseason">
-					<div class="day" ng-repeat="date in self.days | limitTo:28:self.seasons.indexOf(self.cseason)*28" ng-click="self.open_plans(date)">
+				<div class="season" ng-repeat="season in self.seasons" ng-show="season.id==self.cseason.id">
+					<div class="day" ng-repeat="date in self.days | limitTo:28:self.cseason.start-1" ng-click="self.open_plans(date)">
 						<div class="date">{{date%28>0 && date%28 || 28}}</div>
 						
 						<div ng-show="self.data.plans[date].length" class="items">
@@ -101,7 +117,7 @@
 							<div class="col-md-4 col-xs-12">
 								<b>Plant Crop</b><br>
 								<select class="form-control" ng-model="self.newplan.crop">
-									<option ng-repeat="cid in self.crops_list" ng-init="crop=self.crops[cid]" ng-value="cid" ng-show="self.in_season(crop, self.cseason)">
+									<option ng-repeat="cid in self.crops_list" ng-init="crop=self.crops[cid]" ng-value="cid" ng-show="crop.can_grow(self.cseason, true)">
 										{{crop.name}}
 									</option>
 								</select>
@@ -127,26 +143,26 @@
 					</div>
 					
 					<div ng-show="self.data.plans[self.cdate].length">
-						<table class="plans table table-condensed">
+						<table class="crops table table-condensed">
 							<thead>
 								<tr>
 									<th colspan="2">Planting</th>
 									<th>Amount</th>
 									<th>Cost</th>
 									<th>Fertilizer</th>
-									<th>Days</th>
-									<th>Regrow</th>
+									<th><i class="fa fa-clock-o"></i> Days</th>
+									<th><i class="fa fa-refresh"></i> Regrows</th>
 									<th width="1"></th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr class="plan" ng-repeat="plan in self.data.plans[self.cdate]">
+								<tr class="crop" ng-repeat="plan in self.data.plans[self.cdate]">
 									<td width="1"><img ng-src="images/seeds/{{plan.crop}}.png"></td>
 									<td>{{self.crops[plan.crop].name}}</td>
 									<td>x{{plan.amount}}</td>
 									<td>-{{plan.get_cost(1)}}g</td>
 									<td>x{{plan.fertilizer}}</td>
-									<td><i class="fa fa-clock-o"></i> {{self.crops[plan.crop].grow}}</td>
+									<td>{{self.crops[plan.crop].grow}}</td>
 									<td>{{self.crops[plan.crop].regrow}}</td>
 									<td><button class="btn btn-default" ng-click="self.remove_plan(self.cdate, $index)"><i class="fa fa-trash"></i></button></td>
 								</tr>
@@ -159,7 +175,7 @@
 					<hr>
 					
 					<div ng-show="self.data.harvests[self.cdate].length">
-						<table class="plans table table-condensed">
+						<table class="crops table table-condensed">
 							<thead>
 								<tr>
 									<th colspan="2">Harvesting</th>
@@ -170,7 +186,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr class="plan" ng-repeat="harvest in self.data.harvests[self.cdate]">
+								<tr class="crop" ng-repeat="harvest in self.data.harvests[self.cdate]">
 									<td width="1"><img ng-src="images/{{harvest.crop.id}}.png"></td>
 									<td>{{harvest.crop.name}}</td>
 									<td>x{{harvest.yield}}</td>
@@ -180,7 +196,6 @@
 								</tr>
 							</tbody>
 						</table>
-						<div class="day_info"></div>
 					</div>
 					<div ng-show="!self.data.harvests[self.cdate].length" class="text-muted"><i class="fa fa-pagelines"></i> No harvests.</div>
 				</div>
@@ -192,5 +207,64 @@
 	</div>
 	<!-- [/DAY_PLANNER_MODAL] -->
 	
+	
+	<!-- [CROP_INFO_MODAL] -->
+	<div class="modal fade" id="crop_info">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button class="close" data-dismiss="modal"><i class="fa fa-times"></i></button>
+					<h4 class="modal-title">Crop Info</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row seasons">
+						<div class="col-xs-3" ng-repeat="season in self.seasons">
+							<div class="season" ng-class="{'active': self.cinfo_settings.season==season.id}" ng-click="self.cinfo_settings.season=season.id">{{season.name}}</div>
+						</div>
+					</div>
+					<div class="crops_container">
+						<table class="table table-condensed crops">
+							<thead>
+								<tr>
+									<th colspan="2">Crop</th>
+									<th><i class="fa fa-clock-o"></i> Days</th>
+									<th><i class="fa fa-refresh"></i> Regrows</th>
+									<th>Buy</th>
+									<th>Sell</th>
+									<th>Profit/day</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="cid in self.crops_list | orderBy:self.cinfo_profit" class="crop" ng-show="self.crops[cid].can_grow(self.cinfo_settings.season, 1)">
+									<td width="1"><img ng-src="images/{{cid}}.png"></td>
+									<td class="name">
+										<a ng-href="{{self.crop_info[cid].crop.get_url()}}" target="_blank">
+											{{self.crop_info[cid].crop.name}}
+											<span class="text-muted" ng-show="self.crop_info[cid].crop.yield>1">(x{{self.crop_info[cid].crop.yield}})</span>
+										</a>
+										<div class="joja" ng-show="self.crop_info[cid].crop.joja"><i class="fa fa-asterisk"></i> Cheapest at JojaMart</div>
+									</td>
+									<td>{{self.crop_info[cid].crop.grow}}</td>
+									<td>
+										{{self.crop_info[cid].crop.regrow}}
+										<span class="text-muted" ng-show="self.crop_info[cid].crop.regrow_yield>1">(x{{self.crop_info[cid].crop.regrow_yield}})</span>
+									</td>									
+									<td>{{self.crop_info[cid].crop.buy}}g</td>
+									<td>{{self.crop_info[cid].crop.sell[0]}}g</td>
+									<td>{{self.crop_info[cid].profit}}g</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- [/CROP_INFO_MODAL] -->
+	
+	
+	<div class="license">
+		<a href="http://stardewvalley.net/" target="_blank">Stardew Valley</a> © <a href="https://twitter.com/ConcernedApe" target="_blank">ConcernedApe</a>. Unofficial <a href="https://github.com/exnil/crop_planner" target="_blank">crop planner source code</a> made available under the MIT License.
+	</div>
 </body>
 </html>

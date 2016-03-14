@@ -80,9 +80,7 @@
 			"sell": [750, 937, 1125],
 			"grow": 28,
 			"regrow": 8,
-			"seasons": ["spring", "summer", "fall"],
-			"start": 1,
-			"end": 84
+			"seasons": ["spring", "summer", "fall"]
 		}
 	],
 	"summer": [
@@ -175,9 +173,7 @@
 			"sell": [50, 62, 75],
 			"grow": 14,
 			"regrow": 4,
-			"seasons": ["summer", "fall"],
-			"start": 29,
-			"end": 56
+			"seasons": ["summer", "fall"]
 		}
 	],
 	"fall": [

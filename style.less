@@ -51,12 +51,22 @@ body{
 	font-size: 14px;
 	font-family: Source Sans Pro, Verdana;
 	
+	a:hover, a:focus{
+		text-decoration: none;
+	}
+	
 	a, button{
 		.transition(all .2s);
 	}
 	
 	hr{
 		border-color: #ddd;
+	}
+	
+	button, .btn{
+		&.active, &:active, &:focus, &:active:focus{
+			outline: 0;
+		}
 	}
 }
 
@@ -96,6 +106,32 @@ header{
 			font-size: 32px;
 		}
 	}
+}
+
+.license{
+	text-align: center;
+	color: #fff;
+	font-size: 13px;
+	text-shadow: 0 1px 1px #000;
+	width: 100%;
+	margin: 10px 0;
+	
+	a{
+		color: lighten(#337ab7, 35%);
+		
+		&:hover, &:focus{
+			color: lighten(#337ab7, 50%);
+			text-decoration: underline;
+		}
+	}
+}
+
+
+/********************************
+	TOP MENU
+********************************/
+#top_menu{
+	margin-bottom: 10px;
 }
 
 
@@ -287,9 +323,11 @@ header{
 /********************************
 	CROPS PLANNER
 ********************************/
-#crop_planner{
-	.plans{
-		.plan{
+#crop_planner, #crop_info{	
+	.crops{
+		margin-bottom: 0;
+		
+		.crop{
 			td{			
 				vertical-align: middle;
 			}
@@ -306,6 +344,47 @@ header{
 	}
 }
 
+#crop_info{
+	.seasons{
+		border-bottom: 2px solid #ccc;
+		
+		.season{
+			padding: 6px 0;
+			cursor: pointer;
+			text-align: center;
+			border-radius: 4px 4px 0 0;
+			border: 1px solid transparent;
+			border-bottom: 0;
+			.transition(all .2s);
+			
+			&:hover{
+				background-color: #ddd;
+			}
+			
+			&.active{
+				border-color: #ccc;
+				background-color: #fff;
+			}
+		}
+	}
+	
+	.crops_container{
+		max-height: 700px;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		
+		.name{
+			position: relative;
+			
+			.joja{
+				position: absolute;
+				font-size: 10px;
+				color: #777;
+				bottom: 0; left: 15px;
+			}
+		}
+	}
+}
 
 /********************************
 	BOOTSTRAP RESTYLE
