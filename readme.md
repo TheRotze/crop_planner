@@ -6,7 +6,7 @@ A tool for planning crop schedules in the Stardew Valley game.
 
 
 ## Crop Info
-Profit per day is calculated using the minimum sale value of a single crop and its number of total possible harvests per month.
+Profit per day is calculated using the minimum sale value of a single crop.
 
-Profit per day: <code>((Total Harvests * Sale) - Seed Price) / Final Harvest Date</code>
+Profit per day: <code>((Total Harvests * Sale) - Seed Price) / Date before Final Harvest</code>
 
