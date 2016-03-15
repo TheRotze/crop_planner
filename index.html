@@ -68,7 +68,7 @@
 					<div class="day_name">Sa</div>
 					<div class="day_name">Su</div>
 				</div>
-				<div class="season" ng-repeat="season in self.seasons" ng-show="season.id==self.cseason.id">
+				<div class="day_container">
 					<div class="day" ng-repeat="date in self.days | limitTo:28:self.cseason.start-1" ng-click="self.open_plans(date)">
 						<div class="date">{{date%28>0 && date%28 || 28}}</div>
 						
@@ -92,8 +92,8 @@
 							<div class="more" ng-show="self.data.harvests[date].length > 4">{{self.data.harvests[date].length-4}} more...</div>
 						</div>
 						
-						<div class="day_info">
-							<span ng-show="self.data.totals.day[date].profit">{{self.data.totals.day[date].profit>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1)}}g</span>
+						<div class="profit" ng-show="self.data.totals.day[date].profit">
+							{{self.data.totals.day[date].profit>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1)}}g
 						</div>
 					</div>
 				</div>
@@ -168,7 +168,6 @@
 								</tr>
 							</tbody>
 						</table>
-						<div class="day_info"></div>
 					</div>
 					<div ng-show="!self.data.plans[self.cdate].length" class="text-muted"><i class="fa fa-tint"></i> No planting.</div>
 					
