@@ -12,6 +12,7 @@ function planner_controller($scope){
 	
 	self.days = new Array(28*4);
 	self.seasons = [new Season(0), new Season(1), new Season(2), new Season(3)];
+	self.config = {};
 	self.loaded = false;
 	
 	// Planner modal
@@ -57,13 +58,15 @@ function planner_controller($scope){
 		}
 		self.data.totals.season = [new Finance, new Finance, new Finance, new Finance];
 		
-		// Load crop data
+		// Load planner config data
 		$.ajax({
-			url: "crops.json",
+			url: "config.json",
 			dataType: "json",
-			success: function(data){
+			success: function(config){
+				self.config = config;
+				
 				// Process received crop data
-				$.each(data, function(season, crops){
+				$.each(self.config.crops, function(season, crops){
 					$.each(crops, function(i, crop){
 						if (!crop.seasons) crop.seasons = [season];
 						crop = new Crop(crop);
@@ -394,7 +397,7 @@ function planner_controller($scope){
 			
 			// Harvest revenue and costs
 			self.revenue = crop.sell[0] * self.yield;
-			self.cost = (crop.buy * plan.amount) + (20 * plan.fertilizer);
+			self.cost = (crop.buy * plan.amount) + (planner.config.fertilizer.buy * plan.fertilizer);
 			
 			// Regrowth
 			if (is_regrowth){
