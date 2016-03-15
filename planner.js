@@ -31,8 +31,9 @@ function planner_controller($scope){
 	self.crops = {}; 				// {id: {data}}
 	self.open_crop_info = open_crop_info;
 	self.crop_info;
-	self.cinfo_profit = cinfo_profit;
-	self.cinfo_settings = {season: "spring"};
+	self.cinfo_sort = cinfo_sort;
+	self.cinfo_set_sort = cinfo_set_sort;
+	self.cinfo_settings = {season: "spring", sort: "profit", order: false};
 	
 	// Planner data
 	self.data = {plans: {}, harvests: {}, totals: {}};
@@ -296,11 +297,13 @@ function planner_controller($scope){
 		self.yield = 1;
 		self.regrow;
 		self.regrow_yield = 1;
-		self.joja = false;
+		self.note = "";
+		self.seasons = [];
 		self.start = 0;
 		self.end = 0;
 		self.can_grow = can_grow;
 		self.get_url = get_url;
+		self.get_image = get_image;
 		
 		
 		init();
@@ -319,8 +322,12 @@ function planner_controller($scope){
 			// Specialized properties
 			if (data.yield) self.yield = data.yield;
 			if (data.regrow) self.regrow = data.regrow;
-			if (data.regrow_yield) self.regrow_yield = data.regrow_yield;
-			if (data.joja) self.joja = data.joja;
+			if (data.regrow_yield){
+				self.regrow_yield = data.regrow_yield;
+			} else {
+				self.regrow_yield = self.yield;
+			}
+			if (data.note) self.note = data.note;
 			self.seasons = data.seasons;
 			self.start = get_season(data.seasons[0]).start;
 			self.end = get_season(data.seasons[data.seasons.length-1]).end;
@@ -345,6 +352,13 @@ function planner_controller($scope){
 			}
 			fragment = fragment.join("_");
 			return "http://stardewvalleywiki.com/Crops#"+fragment;
+		}
+		
+		// Get thumbnail image
+		function get_image(seeds){
+			if (seeds && self.seasons[0] == "winter") return "images/seeds/winter.png";
+			if (seeds) return "images/seeds/"+self.id+".png";
+			return "images/"+self.id+".png";
 		}
 	}
 	
@@ -523,6 +537,8 @@ function planner_controller($scope){
 	function open_crop_info(){
 		$("#crop_info").modal();
 		
+		self.cinfo_settings.season = self.cseason.id;
+		
 		// Compile crop info
 		if (!self.crop_info){
 			self.crop_info = {};
@@ -533,26 +549,59 @@ function planner_controller($scope){
 				info.profit = 0;
 				
 				// Monthly profit
-				var days = (crop.end - crop.start) + 1;
-				var regrowths = crop.regrow ? Math.floor(((days-1)-crop.grow)/crop.regrow) : 0;
-				var regrow_yields = crop.regrow_yields ? crop.regrow_yields : 1;
+				var season_days = (crop.end - crop.start) + 1;
+				var regrowths = crop.regrow ? Math.floor(((season_days-1)-crop.grow)/crop.regrow) : 0;
 				
 				var plantings = 1;
-				if (!regrowths) plantings = Math.floor((days-1)/crop.grow);
+				if (!regrowths) plantings = Math.floor((season_days-1)/crop.grow);
+				var growth_days = (plantings * crop.grow) + (regrowths * (crop.regrow ? crop.regrow : 0));
 				
 				info.profit -= crop.buy * plantings;
 				info.profit += crop.yield * crop.sell[0] * plantings;
-				info.profit += regrowths * regrow_yields * crop.sell[0];
-				info.profit = Math.round((info.profit/days) * 10) / 10;
+				info.profit += regrowths * crop.regrow_yield * crop.sell[0];
+				info.profit = Math.round((info.profit/growth_days) * 10) / 10;
 				
 				self.crop_info[crop.id] = info;
 			}
 		}
 	}
 	
-	function cinfo_profit(cid){
+	function cinfo_sort(cid){
 		if (!self.crop_info) return 0;
-		return self.crop_info[cid].profit;
+		
+		var value = 0;
+		switch (self.cinfo_settings.sort){
+			case "name":
+				value = self.crop_info[cid].crop.id;
+				break;
+			case "grow":
+				value = self.crop_info[cid].crop.grow;
+				break;
+			case "regrow":
+				value = self.crop_info[cid].crop.regrow;
+				break;
+			case "buy":
+				value = self.crop_info[cid].crop.buy;
+				break;
+			case "sell":
+				value = self.crop_info[cid].crop.sell[0];
+				break;
+			case "profit":
+				value = self.crop_info[cid].profit;
+				break;
+		}
+		
+		return value ? value : 0;
+	}
+	
+	function cinfo_set_sort(key){
+		if (self.cinfo_settings.sort == key){
+			self.cinfo_settings.order = !self.cinfo_settings.order;
+		} else {
+			self.cinfo_settings.sort = key;
+			self.cinfo_settings.order = false;
+		}
+		console.log(self.cinfo_settings.sort);
 	}
 	
 	

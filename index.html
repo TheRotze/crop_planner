@@ -75,7 +75,7 @@
 						<div ng-show="self.data.plans[date].length" class="items">
 							<div class="planting">
 								<div class="plan" ng-repeat="plan in self.data.plans[date] | limitTo:4">
-									<img ng-src="images/seeds/{{plan.crop}}.png">
+									<img ng-src="{{self.crops[plan.crop].get_image(1)}}">
 									<div class="amount">x{{plan.amount}}</div>
 								</div>
 							</div>
@@ -85,7 +85,7 @@
 						<div ng-show="self.data.harvests[date].length">
 							<div class="harvesting">
 								<div class="plan" ng-repeat="harvest in self.data.harvests[date] | limitTo:4">
-									<img ng-src="images/{{harvest.crop.id}}.png">
+									<img ng-src="{{harvest.crop.get_image()}}">
 									<div class="amount">x{{harvest.yield}}</div>
 								</div>
 							</div>
@@ -117,7 +117,7 @@
 							<div class="col-md-4 col-xs-12">
 								<b>Plant Crop</b><br>
 								<select class="form-control" ng-model="self.newplan.crop">
-									<option ng-repeat="cid in self.crops_list" ng-init="crop=self.crops[cid]" ng-value="cid" ng-show="crop.can_grow(self.cseason, true)">
+									<option ng-repeat="cid in self.crops_list | orderBy:cid" ng-init="crop=self.crops[cid]" ng-value="crop.id" ng-show="crop.can_grow(self.cseason, true)">
 										{{crop.name}}
 									</option>
 								</select>
@@ -157,7 +157,7 @@
 							</thead>
 							<tbody>
 								<tr class="crop" ng-repeat="plan in self.data.plans[self.cdate]">
-									<td width="1"><img ng-src="images/seeds/{{plan.crop}}.png"></td>
+									<td width="1"><img ng-src="{{self.crops[plan.crop].get_image(1)}}"></td>
 									<td>{{self.crops[plan.crop].name}}</td>
 									<td>x{{plan.amount}}</td>
 									<td>-{{plan.get_cost(1)}}g</td>
@@ -187,7 +187,7 @@
 							</thead>
 							<tbody>
 								<tr class="crop" ng-repeat="harvest in self.data.harvests[self.cdate]">
-									<td width="1"><img ng-src="images/{{harvest.crop.id}}.png"></td>
+									<td width="1"><img ng-src="{{harvest.crop.get_image()}}"></td>
 									<td>{{harvest.crop.name}}</td>
 									<td>x{{harvest.yield}}</td>
 									<td>+{{harvest.get_revenue(1)}}g</td>
@@ -226,28 +226,28 @@
 						<table class="table table-condensed crops">
 							<thead>
 								<tr>
-									<th colspan="2">Crop</th>
-									<th><i class="fa fa-clock-o"></i> Days</th>
-									<th><i class="fa fa-refresh"></i> Regrows</th>
-									<th>Buy</th>
-									<th>Sell</th>
-									<th>Profit/day</th>
+									<th ng-click="self.cinfo_set_sort('name')" colspan="2">Crop</th>
+									<th ng-click="self.cinfo_set_sort('grow')"><i class="fa fa-clock-o"></i> Days</th>
+									<th ng-click="self.cinfo_set_sort('regrow')"><i class="fa fa-refresh"></i> Regrows</th>
+									<th ng-click="self.cinfo_set_sort('buy')">Buy</th>
+									<th ng-click="self.cinfo_set_sort('sell')">Sell</th>
+									<th ng-click="self.cinfo_set_sort('profit')">Profit/day</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="cid in self.crops_list | orderBy:self.cinfo_profit" class="crop" ng-show="self.crops[cid].can_grow(self.cinfo_settings.season, 1)">
-									<td width="1"><img ng-src="images/{{cid}}.png"></td>
+								<tr ng-repeat="cid in self.crops_list | orderBy:self.cinfo_sort:self.cinfo_settings.order" class="crop" ng-show="self.crops[cid].can_grow(self.cinfo_settings.season, 1)">
+									<td width="1"><img ng-src="{{self.crops[cid].get_image()}}"></td>
 									<td class="name">
 										<a ng-href="{{self.crop_info[cid].crop.get_url()}}" target="_blank">
 											{{self.crop_info[cid].crop.name}}
 											<span class="text-muted" ng-show="self.crop_info[cid].crop.yield>1">(x{{self.crop_info[cid].crop.yield}})</span>
 										</a>
-										<div class="joja" ng-show="self.crop_info[cid].crop.joja"><i class="fa fa-asterisk"></i> Cheapest at JojaMart</div>
+										<div class="note" ng-show="self.crop_info[cid].crop.note"><i class="fa fa-asterisk"></i> {{self.crop_info[cid].crop.note}}</div>
 									</td>
 									<td>{{self.crop_info[cid].crop.grow}}</td>
 									<td>
 										{{self.crop_info[cid].crop.regrow}}
-										<span class="text-muted" ng-show="self.crop_info[cid].crop.regrow_yield>1">(x{{self.crop_info[cid].crop.regrow_yield}})</span>
+										<span class="text-muted" ng-show="self.crop_info[cid].crop.regrow>1 && self.crop_info[cid].crop.regrow_yield>1">(x{{self.crop_info[cid].crop.regrow_yield}})</span>
 									</td>									
 									<td>{{self.crop_info[cid].crop.buy}}g</td>
 									<td>{{self.crop_info[cid].crop.sell[0]}}g</td>
