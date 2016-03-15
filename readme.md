@@ -9,7 +9,7 @@ A tool for planning crop schedules in the Stardew Valley game.
 Profit per day is calculated using the minimum sale value of a single planted crop.<br>
 Profit per day: <code>((Total Yields * Sells For) - (Seed Price * Total Plantings)) / (Final Harvest Date - 1)</code>
 
-<b>Example 1:</b><br>
+<b>Example 1 - Parsnip</b><br>
 Parsnips take 4 days to grow after the day they are planted. In Spring, they can be planted 6 times and yield a total of 6 Parsnips, assuming replanting occurs on the same day of harvesting. The last harvest occurs on Day 25. Seeds cost 20g, and Parsnips sell for 35g.
 <pre>
 ((6 * 35g) - (20g * 6)) / (25 - 1)
@@ -18,7 +18,7 @@ Parsnips take 4 days to grow after the day they are planted. In Spring, they can
 </pre>
 
 
-<b>Example 2:</b><br>
+<b>Example 2 - Corn</b><br>
 Corn takes 14 days to grow after the day it is planted. In Spring and Fall, it is planted once and can yield a total of 11 Corn. The last harvest occurs on Day 55. Seeds cost 150g, and Corn sells for 50g.
 <pre>
 ((11 * 50g) - (150g * 1)) / (55 - 1)
