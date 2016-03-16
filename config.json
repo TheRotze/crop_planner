@@ -1,8 +1,35 @@
 {
-	"fertilizer": {
-		"name": "Quality Fertilizer",
-		"buy": 150
-	},
+	"fertilizer": [
+		{
+			"id": "none",
+			"name": "None",
+			"buy": 0
+		},
+		{
+			"id": "basic_fertilizer",
+			"name": "Basic Fertilizer*",
+			"buy": 100,
+			"quality": [33, 33, 33]
+		},
+		{
+			"id": "quality_fertilizer",
+			"name": "Quality Fertilizer*",
+			"buy": 150,
+			"quality": [10, 30, 60]
+		},
+		{
+			"id": "speed_gro",
+			"name": "Speed-Gro",
+			"buy": 150,
+			"growth_rate": 0.1
+		},
+		{
+			"id": "delux_speed_gro",
+			"name": "Delux Speed-Gro",
+			"buy": 150,
+			"growth_rate": 0.25
+		}
+	],
 	"crops": {
 		"spring": [
 			{
@@ -10,21 +37,21 @@
 				"name": "Parsnip",
 				"buy": 20,
 				"sell": [35, 43, 52],
-				"grow": 4
+				"stages": [1, 1, 1, 1]
 			},
 			{
 				"id": "garlic",
 				"name": "Garlic",
 				"buy": 40,
 				"sell": [60, 75, 90],
-				"grow": 4
+				"stages": [1, 1, 1, 1]
 			},
 			{
 				"id": "potato",
 				"name": "Potato",
 				"buy": 50,
 				"sell": [80, 100, 120],
-				"grow": 6,
+				"stages": [1, 1, 1, 2, 1],
 				"yield": 1.25
 			},
 			{
@@ -32,28 +59,28 @@
 				"name": "Tulip",
 				"buy": 20,
 				"sell": [30, 37, 45],
-				"grow": 6
+				"stages": [1, 1, 2, 2]
 			},
 			{
 				"id": "kale",
 				"name": "Kale",
 				"buy": 70,
 				"sell": [110, 137, 165],
-				"grow": 6
+				"stages": [1, 2, 2, 1]
 			},
 			{
 				"id": "blue_jazz",
 				"name": "Blue Jazz",
 				"buy": 30,
 				"sell": [50, 62, 75],
-				"grow": 7
+				"stages": [1, 2, 2, 2]
 			},
 			{
 				"id": "strawberry",
 				"name": "Strawberry",
 				"buy": 100,
 				"sell": [120, 150, 180],
-				"grow": 8,
+				"stages": [1, 1, 2, 2, 2],
 				"regrow": 4
 			},
 			{
@@ -61,7 +88,7 @@
 				"name": "Green Bean",
 				"buy": 60,
 				"sell": [40, 50, 60],
-				"grow": 10,
+				"stages": [1, 1, 1, 3, 4],
 				"regrow": 3
 			},
 			{
@@ -69,21 +96,21 @@
 				"name": "Cauliflower",
 				"buy": 80,
 				"sell": [175, 218, 262],
-				"grow": 12
+				"stages": [1, 2, 4, 4, 1]
 			},
 			{
 				"id": "rhubarb",
 				"name": "Rhubarb",
 				"buy": 100,
 				"sell": [220, 275, 330],
-				"grow": 13
+				"stages": [2, 2, 2, 3, 4]
 			},
 			{
 				"id": "ancient_fruit",
 				"name": "Ancient Fruit",
 				"buy": 900,
 				"sell": [750, 937, 1125],
-				"grow": 28,
+				"stages": [2, 7, 7, 7, 5],
 				"regrow": 8,
 				"seasons": ["spring", "summer", "fall"]
 			}
@@ -94,14 +121,14 @@
 				"name": "Wheat",
 				"buy": 10,
 				"sell": [27, 34, 40],
-				"grow": 4
+				"stages": [1, 1, 1, 1]
 			},
 			{
 				"id": "hot_pepper",
 				"name": "Hot Pepper",
 				"buy": 40,
 				"sell": [44, 55, 66],
-				"grow": 5,
+				"stages": [1, 1, 1, 1, 1],
 				"regrow": 3
 			},
 			{
@@ -109,35 +136,35 @@
 				"name": "Radish",
 				"buy": 40,
 				"sell": [90, 112, 135],
-				"grow": 6
+				"stages": [2, 1, 2, 1]
 			},
 			{
 				"id": "poppy",
 				"name": "Poppy",
 				"buy": 100,
 				"sell": [154, 192, 213],
-				"grow": 7
+				"stages": [1, 2, 2, 2]
 			},
 			{
 				"id": "summer_spangle",
 				"name": "Summer Spangle",
 				"buy": 50,
 				"sell": [90, 112, 135],
-				"grow": 8
+				"stages": [1, 2, 3, 2]
 			},
 			{
 				"id": "red_cabbage",
 				"name": "Red Cabbage",
 				"buy": 100,
 				"sell": [286, 357, 429],
-				"grow": 9
+				"stages": [2, 1, 2, 2, 2]
 			},
 			{
 				"id": "hops",
 				"name": "Hops",
 				"buy": 60,
 				"sell": [25, 31, 37],
-				"grow": 11,
+				"stages": [1, 1, 2, 3, 4],
 				"regrow": 1
 			},
 			{
@@ -145,7 +172,7 @@
 				"name": "Tomato",
 				"buy": 50,
 				"sell": [66, 82, 99],
-				"grow": 11,
+				"stages": [2, 2, 2, 2, 3],
 				"regrow": 4
 			},
 			{
@@ -153,6 +180,7 @@
 				"name": "Melon",
 				"buy": 80,
 				"sell": [275, 343, 412],
+				"stages": [1, 2, 3, 3, 3],
 				"grow": 12
 			},
 			{
@@ -160,7 +188,7 @@
 				"name": "Blueberry",
 				"buy": 80,
 				"sell": [80, 100, 120],
-				"grow": 13,
+				"stages": [1, 3, 3, 4, 2],
 				"yield": 3,
 				"regrow": 4
 			},
@@ -169,14 +197,14 @@
 				"name": "Starfruit",
 				"buy": 400,
 				"sell": [800, 1000, 1200],
-				"grow": 13
+				"stages": [2, 3, 3, 2, 3]
 			},
 			{
 				"id": "corn",
 				"name": "Corn",
 				"buy": 150,
 				"sell": [50, 62, 75],
-				"grow": 14,
+				"stages": [2, 3, 3, 3, 3],
 				"regrow": 4,
 				"seasons": ["summer", "fall"]
 			}
@@ -187,14 +215,14 @@
 				"name": "Bok Choy",
 				"buy": 50,
 				"sell": [80, 110, 132],
-				"grow": 4
+				"stages": [1, 1, 1, 1]
 			},
 			{
 				"id": "eggplant",
 				"name": "Eggplant",
 				"buy": 20,
 				"sell": [60, 75, 90],
-				"grow": 5,
+				"stages": [1, 1, 1, 1, 1],
 				"regrow": 5
 			},
 			{
@@ -202,14 +230,14 @@
 				"name": "Beet",
 				"buy": 20,
 				"sell": [100, 125, 150],
-				"grow": 6
+				"stages": [1, 1, 2, 2]
 			},
 			{
 				"id": "cranberry",
 				"name": "Cranberry",
 				"buy": 240,
 				"sell": [130, 162, 195],
-				"grow": 7,
+				"stages": [1, 2, 1, 1, 2],
 				"regrow": 5,
 				"yield": 2
 			},
@@ -218,14 +246,14 @@
 				"name": "Amaranth",
 				"buy": 70,
 				"sell": [150, 187, 225],
-				"grow": 7
+				"stages": [1, 2, 2, 2]
 			},
 			{
 				"id": "sunflower",
 				"name": "Sunflower",
 				"buy": 50,
 				"sell": [80, 100, 120],
-				"grow": 8,
+				"stages": [1, 2, 3, 2],
 				"note": "Cheapest at JojaMart"
 			},
 			{
@@ -233,21 +261,21 @@
 				"name": "Artichoke",
 				"buy": 30,
 				"sell": [160, 200, 240],
-				"grow": 8
+				"stages": [2, 2, 1, 2, 1]
 			},
 			{
 				"id": "yam",
 				"name": "Yam",
 				"buy": 60,
 				"sell": [160, 200, 240],
-				"grow": 10
+				"stages": [1, 2, 4, 3]
 			},
 			{
 				"id": "grape",
 				"name": "Grape",
 				"buy": 60,
 				"sell": [80, 100, 120],
-				"grow": 10,
+				"stages": [1, 1, 2, 3, 3],
 				"regrow": 3
 			},
 			{
@@ -255,21 +283,21 @@
 				"name": "Fairy Rose",
 				"buy": 200,
 				"sell": [290, 362, 435],
-				"grow": 12
+				"stages": [1, 4, 4, 3]
 			},
 			{
 				"id": "pumpkin",
 				"name": "Pumpkin",
 				"buy": 100,
 				"sell": [320, 400, 480],
-				"grow": 13
+				"stages": [1, 2, 3, 4, 3]
 			},
 			{
 				"id": "sweet_gem_berry",
 				"name": "Sweet Gem Berry",
 				"buy": 1000,
 				"sell": [3000, 3750, 4500],
-				"grow": 24
+				"stages": [2, 4, 6, 6, 6]
 			}
 		],
 		"winter": [
@@ -278,28 +306,28 @@
 				"name": "Winter Root",
 				"buy": 0,
 				"sell": [70, 87, 105],
-				"grow": 5
+				"stages": [3, 4]
 			},
 			{
 				"id": "crystal_fruit",
 				"name": "Crystal Fruit",
 				"buy": 0,
 				"sell": [150, 187, 225],
-				"grow": 5
+				"stages": [3, 4]
 			},
 			{
 				"id": "snow_yam",
 				"name": "Snow Yam",
 				"buy": 0,
 				"sell": [100, 125, 150],
-				"grow": 5
+				"stages": [3, 4]
 			},
 			{
 				"id": "crocus",
 				"name": "Crocus",
 				"buy": 0,
 				"sell": [60, 82, 99],
-				"grow": 5
+				"stages": [3, 4]
 			}
 		]
 	}

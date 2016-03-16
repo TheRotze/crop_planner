@@ -68,6 +68,22 @@ body{
 			outline: 0;
 		}
 	}
+	
+	input.blend{
+		background-color: transparent;
+		border-color: transparent;
+		width: auto;
+		display: inline-block;
+		box-shadow: inset 0 1px 1px rgba(0,0,0,0);
+		padding-left: 2px;
+		.transition(.2s all);
+		
+		&:hover, &:focus{
+			border-color: #ccc;
+			background-color: #fff;
+			box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+		}
+	}
 }
 
 // Header with logo and page title
@@ -286,6 +302,14 @@ header{
 						line-height: 10px;
 					}
 					
+					.greenhouse{
+						position: absolute;
+						top: 12px;
+						right: -10px;
+						font-size: 12px;
+						color: #777;
+					}
+					
 					.responsive({
 						margin-right: 4px;
 						
@@ -330,6 +354,7 @@ header{
 		.crop{
 			td{			
 				vertical-align: middle;
+				position: relative;
 			}
 			
 			img{
@@ -339,6 +364,35 @@ header{
 			
 			&.error td{
 				background-color: #ff8888;
+			}
+			
+			.greenhouse{
+				position: absolute;
+				top: 2px;
+				right: -3px;
+				font-size: 13px;
+				color: #777;
+			}
+		}
+	}
+}
+
+// Crop planner modal
+#crop_planner{
+	.plant_crop{
+		// Greenhouse toggle button
+		.greenhouse{
+			cursor: pointer;
+			opacity: .4;
+			height: 34px;
+			.transition(all .2s);
+			
+			&:hover{
+				opacity: .5;
+			}
+			
+			&.btn-success{
+				opacity: 1;
 			}
 		}
 	}

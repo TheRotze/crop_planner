@@ -39,7 +39,7 @@
 				<div class="col-xs-8 text-right">
 					<button class="btn btn-default" ng-click="self.clear_season(self.cseason)"><i class="fa fa-calendar"></i> Clear {{self.cseason.name}}</button>				
 					<button class="btn btn-default" ng-click="self.clear_all()"><i class="fa fa-trash"></i> Clear All</button>
-					<button class="btn btn-success" ng-click="self.open_crop_info()"><i class="fa fa-pagelines"></i> Crop Info</button>				
+					<button class="btn btn-success" ng-click="self.open_crop_info()"><i class="fa fa-pagelines"></i> Crop Info</button>
 				</div>
 			</nav>
 			<!-- [/TOP_MENU] -->
@@ -75,8 +75,9 @@
 						<div ng-show="self.data.plans[date].length" class="items">
 							<div class="planting">
 								<div class="plan" ng-repeat="plan in self.data.plans[date] | limitTo:4">
-									<img ng-src="{{self.crops[plan.crop].get_image(1)}}">
+									<img ng-src="{{plan.crop.get_image(1)}}">
 									<div class="amount">x{{plan.amount}}</div>
+									<i class="fa fa-home greenhouse" ng-show="plan.greenhouse"></i>
 								</div>
 							</div>
 							<div class="more" ng-show="self.data.plans[date].length > 4">{{self.data.plans[date].length-4}} more...</div>
@@ -87,6 +88,7 @@
 								<div class="plan" ng-repeat="harvest in self.data.harvests[date] | limitTo:4">
 									<img ng-src="{{harvest.crop.get_image()}}">
 									<div class="amount">x{{harvest.yield}}</div>
+									<i class="fa fa-home greenhouse" ng-show="harvest.plan.greenhouse"></i>
 								</div>
 							</div>
 							<div class="more" ng-show="self.data.harvests[date].length > 4">{{self.data.harvests[date].length-4}} more...</div>
@@ -112,31 +114,35 @@
 					<h4 class="modal-title">{{self.get_date(self.cdate, '%F &ensp;&mdash;&ensp; %l the %j%S')}}</h4>
 				</div>
 				<div class="modal-body">
-					<div class="add_crop">
+					<div class="plant_crop">
 						<div class="row">
-							<div class="col-md-4 col-xs-12">
+							<div class="col-md-1 col-xs-1">
+								&nbsp;<br>
+								<button class="btn greenhouse" rel="tooltip" title="Greenhouse" ng-class="{'btn-success': self.newplan.greenhouse, 'btn-default': !self.newplan.greenhouse}" ng-click="self.newplan.greenhouse=!self.newplan.greenhouse"><i class="fa fa-home"></i></button>
+							</div>
+							<div class="col-md-3 col-xs-11">
 								<b>Plant Crop</b><br>
-								<select class="form-control" ng-model="self.newplan.crop">
-									<option ng-repeat="cid in self.crops_list | orderBy:cid" ng-init="crop=self.crops[cid]" ng-value="crop.id" ng-show="crop.can_grow(self.cseason, true)">
+								<select class="form-control" ng-model="self.newplan.crop_id">
+									<option ng-repeat="crop in self.crops_list | orderBy:'name'" ng-value="crop.id" ng-show="crop.can_grow(self.cseason, true) || self.newplan.greenhouse">
 										{{crop.name}}
 									</option>
 								</select>
 							</div>
-							<div class="col-md-3 col-xs-4">
+							<div class="col-md-2 col-xs-4">
 								<label>
 									<b>Amount</b><br>
 									<input class="form-control" type="number" ng-model="self.newplan.amount" min="1" ng-keypress="self.add_plan_key(self.cdate, $event)">
 								</label>
 							</div>
 							<div class="col-md-3 col-xs-4">
-								<label>
-									<b>Quality Fertilizer ({{self.config.fertilizer.buy}}g)</b><br>
-									<input class="form-control" type="number" ng-model="self.newplan.fertilizer" min="0" ng-keypress="self.add_plan_key(self.cdate, $event)">
-								</label>
+								<b>Fertilizer</b><br>
+								<select class="form-control" ng-model="self.newplan.fertilizer" ng-options="fert as fert.name for fert in self.config.fertilizer track by fert.id">
+								</select>
 							</div>
-							<div class="col-md-2 col-xs-4">
-								&nbsp;<br>
-								<button class="btn btn-default" ng-click="self.add_plan(self.cdate)"><i class="fa fa-plus-circle"></i> Add</button>
+							<div class="col-md-3 col-xs-4">
+								<b>Plant</b><br>
+								<button class="btn btn-default" ng-click="self.add_plan(self.cdate)"><i class="fa fa-plus"></i> Once</button>
+								<button class="btn btn-default" ng-click="self.add_plan(self.cdate, true)"><i class="fa fa-calendar"></i> All</button>
 							</div>
 						</div>
 						<br>
@@ -157,13 +163,21 @@
 							</thead>
 							<tbody>
 								<tr class="crop" ng-repeat="plan in self.data.plans[self.cdate]">
-									<td width="1"><img ng-src="{{self.crops[plan.crop].get_image(1)}}"></td>
-									<td>{{self.crops[plan.crop].name}}</td>
+									<td width="1">
+										<img ng-src="{{plan.crop.get_image(1)}}">
+										<i class="fa fa-home greenhouse" ng-show="plan.greenhouse" title="Greenhouse"></i>
+									</td>
+									<td>{{plan.crop.name}}</td>
 									<td>x{{plan.amount}}</td>
 									<td>-{{plan.get_cost(1)}}g</td>
-									<td>x{{plan.fertilizer}}</td>
-									<td>{{self.crops[plan.crop].grow}}</td>
-									<td>{{self.crops[plan.crop].regrow}}</td>
+									<td>
+										<div ng-show="plan.fertilizer.id!='none'">
+											<img ng-src="{{plan.fertilizer.get_image()}}">
+											{{plan.fertilizer.name}}
+										</div>
+									</td>
+									<td>{{plan.get_grow_time()}}</td>
+									<td>{{plan.crop.regrow}}</td>
 									<td><button class="btn btn-default" ng-click="self.remove_plan(self.cdate, $index)"><i class="fa fa-trash"></i></button></td>
 								</tr>
 							</tbody>
@@ -186,7 +200,10 @@
 							</thead>
 							<tbody>
 								<tr class="crop" ng-repeat="harvest in self.data.harvests[self.cdate]">
-									<td width="1"><img ng-src="{{harvest.crop.get_image()}}"></td>
+									<td width="1">
+										<img ng-src="{{harvest.crop.get_image()}}">
+										<i class="fa fa-home greenhouse" ng-show="harvest.plan.greenhouse" title="Greenhouse"></i>
+									</td>
 									<td>{{harvest.crop.name}}</td>
 									<td>x{{harvest.yield}}</td>
 									<td>+{{harvest.get_revenue(1)}}g</td>
@@ -234,23 +251,23 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="cid in self.crops_list | orderBy:self.cinfo_sort:self.cinfo_settings.order" class="crop" ng-show="self.crops[cid].can_grow(self.cinfo_settings.season, 1)">
-									<td width="1"><img ng-src="{{self.crops[cid].get_image()}}"></td>
+								<tr ng-repeat="crop in self.crops_list | orderBy:self.cinfo_settings.sort:self.cinfo_settings.order" class="crop" ng-show="crop.can_grow(self.cinfo_settings.season, 1)">
+									<td width="1"><img ng-src="{{crop.get_image()}}"></td>
 									<td class="name">
-										<a ng-href="{{self.crop_info[cid].crop.get_url()}}" target="_blank">
-											{{self.crop_info[cid].crop.name}}
-											<span class="text-muted" ng-show="self.crop_info[cid].crop.yield>1">(x{{self.crop_info[cid].crop.yield}})</span>
+										<a ng-href="{{crop.get_url()}}" target="_blank">
+											{{crop.name}}
+											<span class="text-muted" ng-show="crop.yield>1">(x{{crop.yield}})</span>
 										</a>
-										<div class="note" ng-show="self.crop_info[cid].crop.note"><i class="fa fa-asterisk"></i> {{self.crop_info[cid].crop.note}}</div>
+										<div class="note" ng-show="crop.note"><i class="fa fa-asterisk"></i> {{crop.note}}</div>
 									</td>
-									<td>{{self.crop_info[cid].crop.grow}}</td>
+									<td>{{crop.grow}}</td>
 									<td>
-										{{self.crop_info[cid].crop.regrow}}
-										<span class="text-muted" ng-show="self.crop_info[cid].crop.regrow>1 && self.crop_info[cid].crop.regrow_yield>1">(x{{self.crop_info[cid].crop.regrow_yield}})</span>
-									</td>									
-									<td>{{self.crop_info[cid].crop.buy}}g</td>
-									<td>{{self.crop_info[cid].crop.sell[0]}}g</td>
-									<td>{{self.crop_info[cid].profit}}g</td>
+										{{crop.regrow}}
+										<span class="text-muted" ng-show="crop.regrow>1 && crop.regrow_yield>1">(x{{crop.regrow_yield}})</span>
+									</td>
+									<td>{{crop.buy}}g</td>
+									<td>{{crop.sell[0]}}g</td>
+									<td>{{crop.profit}}g</td>
 								</tr>
 							</tbody>
 						</table>

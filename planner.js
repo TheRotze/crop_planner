@@ -1,8 +1,3 @@
-// Capitalize first letter of word
-String.prototype.ucfirst = function() {
-	return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
 // Angular app
 angular.module("planner_app", [])
 	.controller("planner_controller", planner_controller);
@@ -10,46 +5,51 @@ angular.module("planner_app", [])
 function planner_controller($scope){
 	var self = this; window.planner = self;
 	
-	self.days = new Array(28*4);
-	self.seasons = [new Season(0), new Season(1), new Season(2), new Season(3)];
+	// Core data
 	self.config = {};
 	self.loaded = false;
-	
-	// Planner modal
-	self.planner = $("#crop_planner");
-	self.open_plans = open_plans;
-	self.close_plans = close_plans;
-	self.get_date = get_date;
+	self.data = {plans: {}, harvests: {}, totals: {}};
+	self.update = update;
 	
 	// Seasons
-	self.cdate;						// Currently open date
-	self.cseason = self.seasons[0];	// Current season
+	self.days = new Array(28*4);
+	self.cdate;
+	self.seasons = [new Season(0), new Season(1), new Season(2), new Season(3)];
+	self.cseason = self.seasons[0];
 	self.get_season = get_season;
 	self.set_season = set_season;
 	
-	// Crop data
+	// Crops
 	self.crops_list = []; 			// [id, id, ...]
 	self.crops = {}; 				// {id: {data}}
-	self.open_crop_info = open_crop_info;
-	self.crop_info;
-	self.cinfo_sort = cinfo_sort;
-	self.cinfo_set_sort = cinfo_set_sort;
-	self.cinfo_settings = {season: "spring", sort: "profit", order: false};
 	
-	// Planner data
-	self.data = {plans: {}, harvests: {}, totals: {}};
-	self.newplan = new Plan;
+	// Planner
+	self.fertilizer = {}; 			// [fertilizer, fertilizer, ...]
+	self.newplan;
 	self.add_plan = add_plan;
 	self.add_plan_key = add_plan_key;
 	self.remove_plan = remove_plan;
 	self.clear_season = clear_season;
 	self.clear_all = clear_all;
-	self.update = update;
+	
+	// Planner modal
+	self.planner_modal = $("#crop_planner");
+	self.open_plans = open_plans;
+	self.close_plans = close_plans;
+	self.get_date = get_date;
+	
+	// Crop info modal
+	self.cinfo_settings = {season: "spring", sort: "profit", order: false};
+	self.open_crop_info = open_crop_info;
+	self.cinfo_set_sort = cinfo_set_sort;
 	
 	
 	init();
 	
 	
+	/********************************
+		CORE PLANNER FUNCTIONS
+	********************************/
 	function init(){
 		// Initialize planner data
 		for (var i=0; i<self.days.length; i++){
@@ -58,6 +58,9 @@ function planner_controller($scope){
 		}
 		self.data.totals.season = [new Finance, new Finance, new Finance, new Finance];
 		
+		// Enable bootstrap tooltips
+		$("body").tooltip({selector: "[rel=tooltip]"});
+		
 		// Load planner config data
 		$.ajax({
 			url: "config.json",
@@ -65,17 +68,24 @@ function planner_controller($scope){
 			success: function(config){
 				self.config = config;
 				
-				// Process received crop data
+				// Process crop data
 				$.each(self.config.crops, function(season, crops){
 					$.each(crops, function(i, crop){
 						if (!crop.seasons) crop.seasons = [season];
 						crop = new Crop(crop);
-						self.crops_list.push(crop.id);
+						self.crops_list.push(crop);
 						self.crops[crop.id] = crop;
 					});
 				});
 				
-				// Load stored plans
+				// Process fertilizer data
+				$.each(self.config.fertilizer, function(i, fertilizer){
+					fertilizer = new Fertilizer(fertilizer);
+					self.config.fertilizer[i] = fertilizer;
+					self.fertilizer[fertilizer.id] = fertilizer;
+				});
+				
+				// Load saved plans from browser storage
 				var plan_count = load_data();
 				self.loaded = true;
 				
@@ -84,16 +94,18 @@ function planner_controller($scope){
 				console.log("Loaded "+plan_count+" plans.");
 				
 				// Update plans
+				self.newplan = new Plan;
 				update();
 				$scope.$apply();
+			},
+			error: function(xhr, status, error){
+				if (!xhr.responseText) return;
+				console.log("Error: ", status);
+				console.log("Reason: ", error);
 			}
 		});
 	}
 	
-	
-	/********************************
-		SAVE/LOAD
-	********************************/
 	// Save plan data to localstorage
 	function save_data(){
 		var data = {};
@@ -127,80 +139,6 @@ function planner_controller($scope){
 		return plan_count;
 	}
 	
-	
-	/********************************
-		PLANNER MODAL
-	********************************/
-	// Open crop planner modal
-	function open_plans(date){
-		self.planner.modal();
-		self.cdate = date;
-	}
-	
-	// Close crop planner modal
-	function close_plans(){
-		self.planner.modal("hide");
-	}
-	
-	
-	/********************************
-		ADD/REMOVE PLANS
-	********************************/
-	// Add self.newplan to plans list
-	function add_plan(date){
-		// Validate data
-		if (!self.newplan.crop) return;
-		
-		self.newplan.amount = parseInt(self.newplan.amount || 0);
-		if (self.newplan.amount <= 0) return;
-		
-		self.newplan.fertilizer = parseInt(self.newplan.fertilizer || 0);
-		if (self.newplan.fertilizer <= 0) self.newplan.fertilizer = 0;
-		
-		// Copy new plan
-		var plan = self.newplan;
-		self.newplan = new Plan;
-		
-		plan.date = date;
-		self.data.plans[date].push(plan);
-		update();
-		save_data();
-	}
-	
-	// Ad plan to plans list on enter keypress
-	function add_plan_key(date, e){
-		if (e.which == 13) add_plan(date);
-	}
-	
-	// Remove plan from plans list
-	function remove_plan(date, index){
-		self.data.plans[date].splice(index, 1);
-		save_data();
-		update();
-	}
-	
-	// Remove plans from current season
-	function clear_season(){
-		for (var date=self.cseason.start; date<=self.cseason.end; date++){
-			self.data.plans[date] = [];
-		}
-		save_data();
-		update();
-	}
-	
-	// Remove all plans
-	function clear_all(){
-		for (var i=0; i<self.days.length; i++){
-			self.data.plans[i+1] = [];
-		}
-		save_data();
-		update();
-	}
-	
-	
-	/********************************
-		GENERAL PLANNER FUNCTIONS
-	********************************/
 	// Update planner info
 	function update(){
 		// Reset harvests
@@ -217,11 +155,16 @@ function planner_controller($scope){
 			date = parseInt(date);
 			
 			$.each(plans, function(i, plan){
-				var crop = self.crops[plan.crop];
-				var first_harvest = date + crop.grow;
+				var crop = plan.crop;
+				var first_harvest = date + plan.get_grow_time();
 				var season = self.seasons[Math.floor((plan.date-1)/28)];
+				var crop_end = crop.end;
 				
-				if (first_harvest > crop.end) return;
+				if (plan.greenhouse){
+					crop_end = self.days.length;
+				}
+				
+				if (first_harvest > crop_end) return;
 				
 				// Initial harvest
 				var harvests = [];
@@ -229,10 +172,10 @@ function planner_controller($scope){
 				
 				// Regrowth harvests
 				if (crop.regrow){
-					var regrowths = Math.floor((crop.end-first_harvest)/crop.regrow);
+					var regrowths = Math.floor((crop_end-first_harvest)/crop.regrow);
 					for (var i=1; i<=regrowths; i++){
 						var regrow_date = first_harvest + (i*crop.regrow);
-						if (regrow_date > crop.end) break;
+						if (regrow_date > crop_end) break;
 						harvests.push(new Harvest(plan, regrow_date, true));
 					}
 				}
@@ -273,6 +216,35 @@ function planner_controller($scope){
 		});	
 	}
 	
+	
+	/********************************
+		CLASSES
+	********************************/
+	
+	/****************
+		Season class - representing one of the four seasons
+	****************/
+	function Season(ind){
+		var self = this;
+		self.index = ind;
+		self.id;
+		self.name;
+		self.start = 0;
+		self.end = 0;
+		
+		
+		init();
+		
+		
+		function init(){
+			var seasons = ["spring", "summer", "fall", "winter"];
+			self.id = seasons[self.index];
+			self.name = self.id.charAt(0).toUpperCase() + self.id.slice(1);
+			self.start = (self.index*28)+1;
+			self.end = self.start + 27;
+		}
+	}
+	
 	// Get season object by id name
 	function get_season(id){
 		for (var i=0; i<self.seasons.length; i++){
@@ -283,19 +255,20 @@ function planner_controller($scope){
 	// Set current season
 	function set_season(index){
 		self.cseason = self.seasons[index];
+		self.newplan.crop_id = null;
 	}
 	
 	
-	/********************************
-		CLASSES
-	********************************/
-	// Crop class - represents a crop
+	/****************
+		Crop class - represents a crop
+	****************/
 	function Crop(data){
 		var self = this;
 		self.id;
 		self.name = "";
 		self.buy = 0;
 		self.sell = [0, 0, 0];
+		self.stages = [1];
 		self.grow = 0;
 		self.yield = 1;
 		self.regrow;
@@ -304,6 +277,9 @@ function planner_controller($scope){
 		self.seasons = [];
 		self.start = 0;
 		self.end = 0;
+		
+		self.profit = 0; // profit per day
+		
 		self.can_grow = can_grow;
 		self.get_url = get_url;
 		self.get_image = get_image;
@@ -320,7 +296,13 @@ function planner_controller($scope){
 			self.name = data.name;
 			self.buy = data.buy;
 			self.sell = data.sell;
-			self.grow = data.grow;
+			
+			self.stages = data.stages;
+			self.grow = 0;
+			for (var i = 0; i < data.stages.length; i++){
+				self.grow += data.stages[i];
+			}
+			
 			
 			// Specialized properties
 			if (data.yield) self.yield = data.yield;
@@ -334,10 +316,24 @@ function planner_controller($scope){
 			self.seasons = data.seasons;
 			self.start = get_season(data.seasons[0]).start;
 			self.end = get_season(data.seasons[data.seasons.length-1]).end;
+			
+			// Calculate profit per day
+			var season_days = (self.end - self.start) + 1;
+			var regrowths = self.regrow ? Math.floor(((season_days-1)-self.grow)/self.regrow) : 0;
+			
+			var plantings = 1;
+			if (!regrowths) plantings = Math.floor((season_days-1)/self.grow);
+			var growth_days = (plantings * self.grow) + (regrowths * (self.regrow ? self.regrow : 0));
+			
+			self.profit -= self.buy * plantings;
+			self.profit += self.yield * self.sell[0] * plantings;
+			self.profit += regrowths * self.regrow_yield * self.sell[0];
+			self.profit = Math.round((self.profit/growth_days) * 10) / 10;
 		}
 		
 		// Check if crop can grow on date/season
-		function can_grow(date, is_season){
+		function can_grow(date, is_season, in_greenhouse){
+			if (in_greenhouse && (date <= planner.days.length)) return true;
 			if (is_season){
 				var season = date;
 				if (typeof season == "string") season = get_season(season);
@@ -351,7 +347,7 @@ function planner_controller($scope){
 		function get_url(){
 			var fragment = self.id.split("_");
 			for (var i=0; i<fragment.length; i++){
-				fragment[i] = fragment[i].ucfirst();
+				fragment[i] = fragment[i].charAt(0).toUpperCase() + fragment[i].slice(1);
 			}
 			fragment = fragment.join("_");
 			return "http://stardewvalleywiki.com/Crops#"+fragment;
@@ -365,10 +361,13 @@ function planner_controller($scope){
 		}
 	}
 	
-	// Harvest class - represents crops harvested on a date
+	/****************
+		Harvest class - represents crops harvested on a date
+	****************/
 	function Harvest(plan, date, is_regrowth){
 		var self = this;
 		self.date = 0;
+		self.plan = {};
 		self.crop = {};
 		self.amount = 0;
 		self.revenue = 0;
@@ -386,7 +385,8 @@ function planner_controller($scope){
 		
 		function init(){
 			if (!plan || !date) return;
-			var crop = planner.crops[plan.crop];
+			var crop = plan.crop;
+			self.plan = plan;
 			self.crop = crop;
 			self.date = date;
 			
@@ -397,7 +397,7 @@ function planner_controller($scope){
 			
 			// Harvest revenue and costs
 			self.revenue = crop.sell[0] * self.yield;
-			self.cost = (crop.buy * plan.amount) + (planner.config.fertilizer.buy * plan.fertilizer);
+			self.cost = crop.buy * plan.amount;
 			
 			// Regrowth
 			if (is_regrowth){
@@ -425,16 +425,22 @@ function planner_controller($scope){
 		}
 	}
 	
-	// Plan class - represents seeds planted on a date
+	/****************
+		Plan class - represents seeds planted on a date
+	****************/
 	function Plan(data){
 		var self = this;
 		self.date;
-		self.crop;
+		self.crop_id;
+		self.crop = {};
 		self.amount = 1;
-		self.fertilizer = 0;
+		self.fertilizer = planner.fertilizer["none"];
+		self.greenhouse = false;
+		
 		self.harvests = [];
 		
 		self.get_data = get_data;
+		self.get_grow_time = get_grow_time;
 		self.get_cost = get_cost;
 		self.get_revenue = get_revenue;
 		self.get_profit = get_profit;
@@ -446,17 +452,39 @@ function planner_controller($scope){
 		function init(){
 			if (!data) return;
 			self.date = data.date;
-			self.crop = data.crop;
+			self.crop = planner.crops[data.crop];
 			self.amount = data.amount;
-			self.fertilizer = data.fertilizer;
+			self.greenhouse = data.greenhouse ? true : false;
+			if (data.fertilizer && planner.fertilizer[data.fertilizer])
+				self.fertilizer = planner.fertilizer[data.fertilizer];
 		}
 		
+		// Compile data to be saved as JSON
 		function get_data(){
 			var data = {};
-			data.crop = self.crop;
+			data.crop = self.crop.id;
 			data.amount = self.amount;
-			data.fertilizer = self.fertilizer;
+			if (self.greenhouse) data.greenhouse = true;
+			if (self.fertilizer && !self.fertilizer.is_none()) data.fertilizer = self.fertilizer.id;
 			return data;
+		}
+		
+		function get_grow_time(){
+			var days = self.crop.grow;
+			
+			if (self.fertilizer.id == "speed_gro" || self.fertilizer.id == "delux_speed_gro"){
+				// The following may not make sense, but this is how the
+				// sped-up growth rate is calculated in game (as of v1.05)
+				var rate = 0.25;
+				if (self.fertilizer.id == "speed_gro") rate = 0.1;
+				// if (Agriculturist) rate += 0.1; // coming soon
+				
+				var remove_days = Math.ceil(days * rate);
+				var stages = self.crop.stages;
+				days = days - Math.min(stages.length - (stages[0] <= 1 ? 1 : 0), remove_days);
+			}
+		
+			return days;
 		}
 		
 		function get_cost(locale){
@@ -484,7 +512,115 @@ function planner_controller($scope){
 		}
 	}
 	
-	// Finance class - financial details of a day/season/year
+	// Add self.newplan to plans list
+	function add_plan(date, auto_replant){
+		// Validate data
+		if (!self.newplan.crop_id) return false;
+		
+		// Date is out of bounds
+		if (!planner.data.plans[date]) return false;
+		
+		// Check that crop can grow
+		var crop = self.crops[self.newplan.crop_id];
+		if (!crop.can_grow(date, false, self.newplan.greenhouse)) return false;
+		self.newplan.crop = crop;
+		
+		// Amount to plant
+		self.newplan.amount = parseInt(self.newplan.amount || 0);
+		if (self.newplan.amount <= 0) return false;
+		
+		// Add plan
+		var plan = new Plan(self.newplan.get_data());
+		plan.date = date;
+		self.data.plans[date].push(plan);
+		
+		//int days_to_remove = (int)Math.Ceiling((double)days_to_grow * (double)speed);
+		
+		// Auto-replanting
+		var crop_growth = plan.get_grow_time();
+		var next_planting = date + crop_growth;
+		var next_grow = next_planting + crop_growth;
+		if (!auto_replant || crop.regrow || (auto_replant && !crop.can_grow(next_grow, false, self.newplan.greenhouse))){
+			// Reset plan template
+			self.newplan = new Plan;
+			
+			// Update
+			update();
+			save_data();
+		} else if (auto_replant){
+			// Auto-replant
+			add_plan(next_planting, true);
+		}
+	}
+	
+	// Add plan to plans list on enter keypress
+	function add_plan_key(date, e){
+		if (e.which == 13) add_plan(date);
+	}
+	
+	// Remove plan from plans list
+	function remove_plan(date, index){
+		self.data.plans[date].splice(index, 1);
+		save_data();
+		update();
+	}
+	
+	// Remove plans from current season
+	function clear_season(){
+		for (var date=self.cseason.start; date<=self.cseason.end; date++){
+			self.data.plans[date] = [];
+		}
+		save_data();
+		update();
+	}
+	
+	// Remove all plans
+	function clear_all(){
+		for (var i=0; i<self.days.length; i++){
+			self.data.plans[i+1] = [];
+		}
+		save_data();
+		update();
+	}
+	
+	/****************
+		Fertilizer class - represents a type of fertilizer
+	****************/
+	function Fertilizer(data){
+		var self = this;
+		self.id;
+		self.name;
+		self.buy = 0;
+		self.quality = [0, 0, 0]; // for quality-modifying fertilizers
+		self.growth_rate = 0; // for growth-modifying fertilizers
+		self.is_none = is_none;
+		self.get_image = get_image;
+		
+		
+		init();
+		
+		
+		function init(){
+			if (!data) return;
+			self.id = data.id;
+			self.name = data.name;
+			self.buy = data.buy;
+			if (data.quality) self.quality = data.quality;
+			if (data.growth_rate) self.growth_rate = data.growth_rate;
+		}
+		
+		function is_none(){
+			return self.id == "none";
+		}
+		
+		function get_image(){
+			if (!self.is_none()) return "images/fertilizer/"+self.id+".png";
+		}
+	}
+	
+	/****************
+		Finance class - financial details of a day/season/year
+	****************/
 	function Finance(){
 		var self = this;
 		self.revenue = 0;
@@ -511,106 +647,21 @@ function planner_controller($scope){
 		}
 	}
 	
-	// Season class - representing one of the four seasons
-	function Season(ind){
-		var self = this;
-		self.index = ind;
-		self.id;
-		self.name;
-		self.start = 0;
-		self.end = 0;
-		
-		
-		init();
-		
-		
-		function init(){
-			var seasons = ["spring", "summer", "fall", "winter"];
-			self.id = seasons[self.index];
-			self.name = self.id.charAt(0).toUpperCase() + self.id.slice(1);
-			self.start = (self.index*28)+1;
-			self.end = self.start + 27;
-		}
-	}
-	
 	
 	/********************************
-		CROP INFO FUNCTIONS
+		PLANNER MODAL FUNCTIONS
 	********************************/
-	function open_crop_info(){
-		$("#crop_info").modal();
-		
-		self.cinfo_settings.season = self.cseason.id;
-		
-		// Compile crop info
-		if (!self.crop_info){
-			self.crop_info = {};
-			for (var i=0; i<self.crops_list.length; i++){
-				var info = {};
-				var crop = self.crops[self.crops_list[i]];
-				info.crop = crop;
-				info.profit = 0;
-				
-				// Monthly profit
-				var season_days = (crop.end - crop.start) + 1;
-				var regrowths = crop.regrow ? Math.floor(((season_days-1)-crop.grow)/crop.regrow) : 0;
-				
-				var plantings = 1;
-				if (!regrowths) plantings = Math.floor((season_days-1)/crop.grow);
-				var growth_days = (plantings * crop.grow) + (regrowths * (crop.regrow ? crop.regrow : 0));
-				
-				info.profit -= crop.buy * plantings;
-				info.profit += crop.yield * crop.sell[0] * plantings;
-				info.profit += regrowths * crop.regrow_yield * crop.sell[0];
-				info.profit = Math.round((info.profit/growth_days) * 10) / 10;
-				
-				self.crop_info[crop.id] = info;
-			}
-		}
+	// Open crop planner modal
+	function open_plans(date){
+		self.planner_modal.modal();
+		self.cdate = date;
 	}
 	
-	function cinfo_sort(cid){
-		if (!self.crop_info) return 0;
-		
-		var value = 0;
-		switch (self.cinfo_settings.sort){
-			case "name":
-				value = self.crop_info[cid].crop.id;
-				break;
-			case "grow":
-				value = self.crop_info[cid].crop.grow;
-				break;
-			case "regrow":
-				value = self.crop_info[cid].crop.regrow;
-				break;
-			case "buy":
-				value = self.crop_info[cid].crop.buy;
-				break;
-			case "sell":
-				value = self.crop_info[cid].crop.sell[0];
-				break;
-			case "profit":
-				value = self.crop_info[cid].profit;
-				break;
-		}
-		
-		return value ? value : 0;
+	// Close crop planner modal
+	function close_plans(){
+		self.planner_modal.modal("hide");
 	}
 	
-	function cinfo_set_sort(key){
-		if (self.cinfo_settings.sort == key){
-			self.cinfo_settings.order = !self.cinfo_settings.order;
-		} else {
-			self.cinfo_settings.sort = key;
-			self.cinfo_settings.order = false;
-		}
-		console.log(self.cinfo_settings.sort);
-	}
-	
-	
-	/********************************
-		MISC FUNCTIONS
-	********************************/
 	// Get formatted date
 	function get_date(real_date, format){
 		if (!real_date) real_date = self.cdate;
@@ -636,5 +687,24 @@ function planner_controller($scope){
 						.replace("%F", season);
 		
 		return str;
+	}
+	
+	
+	/********************************
+		CROP INFO FUNCTIONS
+	********************************/
+	function open_crop_info(){
+		$("#crop_info").modal();
+		self.cinfo_settings.season = self.cseason.id;
+	}
+	
+	
+	function cinfo_set_sort(key){
+		if (self.cinfo_settings.sort == key){
+			self.cinfo_settings.order = !self.cinfo_settings.order;
+		} else {
+			self.cinfo_settings.sort = key;
+			self.cinfo_settings.order = false;
+		}
 	}
 }
