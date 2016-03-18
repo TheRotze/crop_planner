@@ -14,10 +14,10 @@ Crop info is stored in config.json. This data is retrieved from the game files i
 ### Item Prices
 All items have a **base price** which the game uses to calculate the sell price (when you ship items) and buy price (when you buy items from stores) of that item.
 
-The calculation for minimum sell price of an item (without added Profession bonuses) is below. The quality of an item is used numerically: 0 for regular; 1 for silver; 2 for gold.
+The calculation for minimum sell price of an item (without added Profession bonuses) is below. The Quality of an item is used numerically as a multiplier: 0 for regular; 1 for silver; 2 for gold.
 
 <pre>
-(int) sell price = base price * (1 + (quality * 0.25))
+(int) Sell Price = Base Price * (1 + (Quality * 0.25))
 </pre>
 
 *Note: some items have sell/buy prices that deviate from this formula. These prices are likely hard-coded into the game.*
