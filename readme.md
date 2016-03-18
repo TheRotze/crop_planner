@@ -20,7 +20,7 @@ The calculation for minimum sell price of an item (without added Profession bonu
 (int) sell price = base price * (1 + (quality * 0.25))
 </pre>
 
-*Note: some items have sell/buy prices that deviate from this formula. These values may be hard-coded into the game.*
+*Note: some items have sell/buy prices that deviate from this formula. These values are likely hard-coded into the game.*
 
 ---
 
