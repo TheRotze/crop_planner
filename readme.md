@@ -4,6 +4,7 @@ A tool for planning crop schedules in the Stardew Valley game.
 
 **<a href="http://exnil.github.io/crop_planner/">Live version on github.io</a>**
 
+---
 
 ### Crop Info
 Crop info is stored in config.json. This data is retrieved from the game files in *<install dir>/Content/Data/*, specifically Crops.xnb and ObjectInformation.xnb. I use <a href="https://github.com/Draivin/XNBNode" target="_blank">XNBNode by Draivin</a> to decompress these files and parse them with a Python script to save into config.json.
