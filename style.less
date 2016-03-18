@@ -163,6 +163,7 @@ header{
 	margin: 0;
 	
 	.season{
+		height: 40px;
 		padding: 2px 12px;
 		padding-bottom: 4px;
 		background-color: #DDD1B2;
@@ -190,8 +191,27 @@ header{
 		
 		.profit{
 			position: absolute;
-			top: 6px; right: 12px;
-			font-size: 13px;
+			top: 5px; right: 26px;
+			font-size: 12px;
+			line-height: 11px;
+			
+			> div{
+				
+			}
+			
+			&.min{
+				top: 9px;
+				right: 12px;
+				font-size: 13px;
+			}
+			
+			.asc_icon{
+				position: absolute;
+				top: 5px;
+				right: -20px;
+				font-size: 14px;
+				color: #777;
+			}
 			
 			.responsive({
 				position: relative;
@@ -273,7 +293,7 @@ header{
 			}
 			
 			.items{
-				margin-bottom: 10px;
+				margin-bottom: 2px;
 				
 				.responsive({
 					margin-bottom: 0;
@@ -333,11 +353,27 @@ header{
 			
 			.profit{
 				position: absolute;
-				bottom: 0;
-				left: 0;
+				left: 13px; bottom: -3px;
 				margin: 5px;
-				font-size: 13px;
+				font-size: 12px;
+				line-height: 12px;
 				font-weight: bold;
+				
+				&.min{
+					left: 0; bottom: 3px;
+					font-size: 13px;
+				}
+				
+				> div{
+				
+				}
+				
+				.asc_icon{
+					position: absolute;
+					bottom: 4px; left: -16px;
+					font-size: 14px;
+					color: #777;
+				}
 			}
 		}
 	}
@@ -383,7 +419,7 @@ header{
 		// Greenhouse toggle button
 		.greenhouse{
 			cursor: pointer;
-			opacity: .4;
+			opacity: .5;
 			height: 34px;
 			.transition(all .2s);
 			
@@ -445,6 +481,76 @@ header{
 	}
 }
 
+// Player settings modal
+#player_settings{
+	.settings{
+		margin-bottom: 20px;
+		
+		.btn-success{
+			opacity: 1;
+		}
+			
+		.btn-default{
+			opacity: .5;
+		}
+	}
+	
+	.statistics{
+		.chance_scale{
+			height: 25px;
+			border: 1px solid #888;
+			border-radius: 2px;
+			margin-bottom: 38px;
+			.clearfix;
+			
+			> div{
+				height: 100%;
+				float: left;
+				position: relative;
+				box-sizing: border-box;
+				
+				&:not(:last-child){
+					border-right: 1px solid #aaa;
+				}
+				
+				&.regular{
+					background-color: #bf8550;
+				}
+				
+				&.silver{
+					background-color: silver;
+					background: linear-gradient(135deg, rgba(242,246,248,1) 0%,rgba(216,225,231,1) 50%,rgba(181,198,208,1) 51%,rgba(224,239,249,1) 100%);
+					box-shadow: 0 0 1px 1px rgba(255, 255, 255, .45) inset;
+					
+					.name{
+						left: -28px;
+					}
+				}
+				
+				&.gold{
+					background-color: gold;
+					background: linear-gradient(135deg, rgba(230,240,163,1) 0%,rgba(210,230,56,1) 50%,rgba(195,216,37,1) 51%,rgba(219,240,67,1) 100%);
+					box-shadow: 0 0 1px 1px rgba(255, 255, 255, .45) inset;
+				}
+				
+				.percent{
+					font-size: 12px;
+					padding: 2px 2px;
+					overflow: hidden;
+				}
+				
+				.name{
+					position: absolute;
+					bottom: -20px;
+					left: 0;
+					color: #777;
+					font-size: 12px;
+				}
+			}
+		}
+	}
+}
+
 
 /********************************
 	BOOTSTRAP RESTYLE
@@ -461,6 +567,7 @@ header{
 		.modal-content{
 			background-color: #f0f0f0;
 			border-radius: 0;
+			overflow: hidden;
 			
 			.modal-header{
 				background-color: #ddd;

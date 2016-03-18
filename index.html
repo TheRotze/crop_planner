@@ -40,6 +40,7 @@
 					<button class="btn btn-default" ng-click="self.clear_season(self.cseason)"><i class="fa fa-calendar"></i> Clear {{self.cseason.name}}</button>				
 					<button class="btn btn-default" ng-click="self.clear_all()"><i class="fa fa-trash"></i> Clear All</button>
 					<button class="btn btn-success" ng-click="self.open_crop_info()"><i class="fa fa-pagelines"></i> Crop Info</button>
+					<button class="btn btn-info" ng-click="self.player.open()"><i class="fa fa-user"></i> Player</button>
 				</div>
 			</nav>
 			<!-- [/TOP_MENU] -->
@@ -50,7 +51,16 @@
 				<div class="col-xs-3" ng-repeat="season in self.seasons">
 					<div class="season" ng-class="{'active': season.id==self.cseason.id}" ng-click="self.set_season(season.index)">
 						<div class="name">{{season.name}}</div>
-						<div class="profit">{{self.data.totals.season[season.index].profit>0 && '+' || ''}}{{self.data.totals.season[season.index].get_profit(1)}}g</div>
+						
+						<div class="profit min" ng-show="self.data.totals.season[season.index].profit.min==self.data.totals.season[season.index].profit.max">
+							<div>{{self.data.totals.season[season.index].profit.min>0 && '+' || ''}}{{self.data.totals.season[season.index].get_profit(1)}}g</div>
+						</div>
+						
+						<div class="profit" ng-show="self.data.totals.season[season.index].profit.min!=self.data.totals.season[season.index].profit.max">
+							<i class="asc_icon fa fa-sort-amount-asc"></i>
+							<div>{{self.data.totals.season[season.index].profit.min>0 && '+' || ''}}{{self.data.totals.season[season.index].get_profit(1)}}g</div>
+							<div>{{self.data.totals.season[season.index].profit.max>0 && '+' || ''}}{{self.data.totals.season[season.index].get_profit(1, 1)}}g</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -87,15 +97,23 @@
 							<div class="harvesting">
 								<div class="plan" ng-repeat="harvest in self.data.harvests[date] | limitTo:4">
 									<img ng-src="{{harvest.crop.get_image()}}">
-									<div class="amount">x{{harvest.yield}}</div>
+									<div class="amount">x{{harvest.yield.min}}</div>
 									<i class="fa fa-home greenhouse" ng-show="harvest.plan.greenhouse"></i>
 								</div>
 							</div>
 							<div class="more" ng-show="self.data.harvests[date].length > 4">{{self.data.harvests[date].length-4}} more...</div>
 						</div>
 						
-						<div class="profit" ng-show="self.data.totals.day[date].profit">
-							{{self.data.totals.day[date].profit>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1)}}g
+						<div ng-show="self.data.totals.day[date].profit.min || self.data.totals.day[date].profit.max">
+							<div class="profit min" ng-show="self.data.totals.day[date].profit.min==self.data.totals.day[date].profit.max">
+								<div>{{self.data.totals.day[date].profit.min>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1)}}g</div>
+							</div>
+							
+							<div class="profit" ng-show="self.data.totals.day[date].profit.min!=self.data.totals.day[date].profit.max">
+								<i class="asc_icon fa fa-sort-amount-asc"></i>
+								<div>{{self.data.totals.day[date].profit.min>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1)}}g</div>
+								<div>{{self.data.totals.day[date].profit.max>0 && '+' || ''}}{{self.data.totals.day[date].get_profit(1, 1)}}g</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -157,7 +175,7 @@
 									<th>Cost</th>
 									<th>Fertilizer</th>
 									<th><i class="fa fa-clock-o"></i> Days</th>
-									<th><i class="fa fa-refresh"></i> Regrows</th>
+									<th><i class="fa fa-refresh"></i> Regrows in</th>
 									<th width="1"></th>
 								</tr>
 							</thead>
@@ -195,7 +213,7 @@
 									<th>Yield</th>
 									<th>Revenue</th>
 									<th>Profit</th>
-									<th>Regrows in</th>
+									<th><i class="fa fa-refresh"></i> Regrows in</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -205,9 +223,9 @@
 										<i class="fa fa-home greenhouse" ng-show="harvest.plan.greenhouse" title="Greenhouse"></i>
 									</td>
 									<td>{{harvest.crop.name}}</td>
-									<td>x{{harvest.yield}}</td>
+									<td>x{{harvest.yield.min}}</td>
 									<td>+{{harvest.get_revenue(1)}}g</td>
-									<td>{{harvest.profit>0 && '+' || ''}}{{harvest.get_profit(1)}}g</td>
+									<td>{{harvest.profit.min>0 && '+' || ''}}{{harvest.get_profit(1)}}g</td>
 									<td>{{harvest.crop.regrow && harvest.crop.regrow+' days' || ''}}</td>
 								</tr>
 							</tbody>
@@ -234,7 +252,7 @@
 				</div>
 				<div class="modal-body">
 					<div class="row seasons">
-						<div class="col-xs-3" ng-repeat="season in self.seasons">
+						<div class="col-xs-4" ng-repeat="season in self.seasons" ng-hide="season.id=='winter'">
 							<div class="season" ng-class="{'active': self.cinfo_settings.season==season.id}" ng-click="self.cinfo_settings.season=season.id">{{season.name}}</div>
 						</div>
 					</div>
@@ -244,7 +262,7 @@
 								<tr>
 									<th ng-click="self.cinfo_set_sort('name')" colspan="2">Crop</th>
 									<th ng-click="self.cinfo_set_sort('grow')"><i class="fa fa-clock-o"></i> Days</th>
-									<th ng-click="self.cinfo_set_sort('regrow')"><i class="fa fa-refresh"></i> Regrows</th>
+									<th ng-click="self.cinfo_set_sort('regrow')"><i class="fa fa-refresh"></i> Regrow</th>
 									<th ng-click="self.cinfo_set_sort('buy')">Buy</th>
 									<th ng-click="self.cinfo_set_sort('sell')">Sell</th>
 									<th ng-click="self.cinfo_set_sort('profit')">Profit/day</th>
@@ -256,17 +274,16 @@
 									<td class="name">
 										<a ng-href="{{crop.get_url()}}" target="_blank">
 											{{crop.name}}
-											<span class="text-muted" ng-show="crop.yield>1">(x{{crop.yield}})</span>
+											<span class="text-muted" ng-show="crop.harvest.min>1">(x{{crop.harvest.min}})</span>
 										</a>
 										<div class="note" ng-show="crop.note"><i class="fa fa-asterisk"></i> {{crop.note}}</div>
 									</td>
 									<td>{{crop.grow}}</td>
 									<td>
 										{{crop.regrow}}
-										<span class="text-muted" ng-show="crop.regrow>1 && crop.regrow_yield>1">(x{{crop.regrow_yield}})</span>
 									</td>
 									<td>{{crop.buy}}g</td>
-									<td>{{crop.sell[0]}}g</td>
+									<td>{{crop.get_sell()}}g</td>
 									<td>{{crop.profit}}g</td>
 								</tr>
 							</tbody>
@@ -279,8 +296,65 @@
 	<!-- [/CROP_INFO_MODAL] -->
 	
 	
+	<!-- [PLAYER_MODAL] -->
+	<div class="modal fade" id="player_settings">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button class="close" data-dismiss="modal"><i class="fa fa-times"></i></button>
+					<h4 class="modal-title">Player Settings</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6 settings">
+							<label><b>Farming Level</b><br><input type="number" ng-model="self.player.level" min="0" max="10" class="form-control"></label>
+							
+							<button class="btn" ng-class="{'btn-success': self.player.tiller, 'btn-default': !self.player.tiller}" ng-click="self.player.toggle_perk('tiller')"><i class="fa fa-tint"></i> Tiller</button>
+							
+							<button class="btn" ng-class="{'btn-success': self.player.agriculturist, 'btn-default': !self.player.agriculturist}" ng-click="self.player.toggle_perk('agriculturist')"><i class="fa fa-pagelines"></i> Agriculturist</button>
+						</div>
+						<div class="col-md-6 statistics">
+							<b>Base crop quality chances</b>
+							<div class="chance_scale">
+								<div class="regular" ng-style="{width: self.player.quality_chance(0, 0, true)+'%'}">
+									<div class="percent">{{self.player.quality_chance(0, 0, true)}}%</div>
+									<div class="name">Regular</div>
+								</div>
+								<div class="silver" ng-style="{width: self.player.quality_chance(1, 0, true)+'%'}">
+									<div class="percent">{{self.player.quality_chance(1, 0, true)}}%</div>
+									<div class="name">Silver</div>
+								</div>
+								<div class="gold" ng-style="{width: self.player.quality_chance(2, 0, true)+'%'}">
+									<div class="percent">{{self.player.quality_chance(2, 0, true)}}%</div>
+									<div class="name">Gold</div>
+								</div>
+							</div>
+							
+							<hr>
+							
+							<p>
+								<b>Tiller</b><br>
+								Crops worth 10% more
+							</p>
+							
+							<p>
+								<b>Agriculturist</b><br>
+								All crops grow 10% faster
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-default" data-dismiss="modal"><i class="fa fa-check"></i> Done</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- [/PLAYER_MODAL] -->
+	
+	
 	<div class="license">
-		<a href="http://stardewvalley.net/" target="_blank">Stardew Valley</a> © <a href="https://twitter.com/ConcernedApe" target="_blank">ConcernedApe</a>. Unofficial <a href="https://github.com/exnil/crop_planner" target="_blank">crop planner source code</a> made available under the MIT License.
+		<a href="http://stardewvalley.net/" target="_blank">Stardew Valley</a> (v1.05) © <a href="https://twitter.com/ConcernedApe" target="_blank">ConcernedApe</a>. Unofficial <a href="https://github.com/exnil/crop_planner" target="_blank">crop planner source code</a> made available under the MIT License.
 	</div>
 </body>
 </html>
