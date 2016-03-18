@@ -9,8 +9,9 @@ A tool for planning crop schedules in the Stardew Valley game.
 ### Crop Info
 Crop info is stored in config.json. This data is retrieved from the game files in *<install dir>/Content/Data/*, specifically Crops.xnb and ObjectInformation.xnb. I use <a href="https://github.com/Draivin/XNBNode" target="_blank">XNBNode by Draivin</a> to decompress these files and parse them with a Python script to save into config.json.
 
+---
 
-##### Prices
+### Item Prices
 All items have a **base price** which the game uses to calculate the sell price (when you ship items) and buy price (when you buy items from stores) of that item.
 
 The calculation for minimum sell price of an item (without added Profession bonuses) is below. The quality of an item is used numerically: 0 for regular; 1 for silver; 2 for gold.
@@ -21,8 +22,9 @@ The calculation for minimum sell price of an item (without added Profession bonu
 
 *Note: some items have sell/buy prices that deviate from this formula. These values may be hard-coded into the game.*
 
+---
 
-##### Profit per day
+### Profit per day
 Crop profits-per-day are calculated using the <b><i>minimum sale value</i></b> of a crop.<br>
 Profit per day: <code>((Total Yields * Sells For) - (Seed Price * Total Plantings)) / (Final Harvest Date - 1)</code>
 
