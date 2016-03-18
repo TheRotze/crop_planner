@@ -24,7 +24,7 @@ The calculation for minimum sell price of an item (without added Profession bonu
 
 ---
 
-### Profit per day
+### Profit-per-day
 Crop profits-per-day are calculated using the <b><i>minimum sell price</i></b> of a crop.<br>
 Profit per day: <code>((Total Yields * Sells For) - (Seed Price * Total Plantings)) / (Final Harvest Date - 1)</code>
 
