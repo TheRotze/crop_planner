@@ -19,7 +19,7 @@ The calculation for sell price of an item (without added Profession bonuses) is 
 (int) Sell Price = Base Price * (1 + (Quality * 0.25))
 </pre>
 
-*Note: some items have sell/buy prices that deviate from the above price formulas. These prices are likely hard-coded into the game.*
+*Note: some items have sell/buy prices that deviate from the above formulas. These prices are likely hard-coded into the game.*
 
 ---
 
