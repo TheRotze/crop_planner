@@ -223,9 +223,30 @@
 										<i class="fa fa-home greenhouse" ng-show="harvest.plan.greenhouse" title="Greenhouse"></i>
 									</td>
 									<td>{{harvest.crop.name}}</td>
-									<td>x{{harvest.yield.min}}</td>
-									<td>+{{harvest.get_revenue(1)}}g</td>
-									<td>{{harvest.profit.min>0 && '+' || ''}}{{harvest.get_profit(1)}}g</td>
+									<td>
+										<span ng-show="harvest.yield.min==harvest.yield.max">x{{harvest.yield.min}}</span>
+										<span ng-show="harvest.yield.min!=harvest.yield.max">
+											x{{harvest.yield.min}}
+											<i class="fa fa-fw fa-caret-right text-muted"></i>
+											x{{harvest.yield.max}}
+										</span>
+									</td>
+									<td>
+										<span ng-show="harvest.revenue.min==harvest.revenue.max">+{{harvest.get_revenue(1)}}g</span>
+										<span ng-show="harvest.revenue.min!=harvest.revenue.max">
+											{{harvest.get_revenue(1)}}g
+											<i class="fa fa-fw fa-caret-right text-muted"></i>
+											{{harvest.get_revenue(1, 1)}}g
+										</span>
+									</td>
+									<td>
+										<span ng-show="harvest.profit.min==harvest.profit.max">+{{harvest.get_profit(1)}}g</span>
+										<span ng-show="harvest.profit.min!=harvest.profit.max">
+											{{harvest.get_profit(1)}}g
+											<i class="fa fa-fw fa-caret-right text-muted"></i>
+											{{harvest.get_profit(1, 1)}}g
+										</span>
+									</td>
 									<td>{{harvest.crop.regrow && harvest.crop.regrow+' days' || ''}}</td>
 								</tr>
 							</tbody>

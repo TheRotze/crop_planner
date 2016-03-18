@@ -514,7 +514,7 @@ function planner_controller($scope){
 			// Calculate crop yield (+ extra crop drops)
 			// [SOURCE: StardewValley/Crop.cs : function harvest]
 			self.yield.min = crop.harvest.min * plan.amount;
-			self.yield.max = Math.min(crop.harvest.min + 1, crop.harvest.max + 1 + (planner.player.level / crop.harvest.level_increase)) * plan.amount;
+			self.yield.max = (Math.min(crop.harvest.min + 1, crop.harvest.max + 1 + (planner.player.level / crop.harvest.level_increase))-1) * plan.amount;
 			
 			// Harvest revenue and costs
 			var q_mult = 0;
