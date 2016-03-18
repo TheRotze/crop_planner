@@ -535,14 +535,17 @@ function planner_controller($scope){
 			var regular_chance = planner.player.quality_chance(0, q_mult);
 			var silver_chance = planner.player.quality_chance(1, q_mult);
 			var gold_chance = planner.player.quality_chance(2, q_mult);
-			var min_sale = crop.get_sell(0);
-			var max_revenue = (min_sale*regular_chance) + (crop.get_sell(1)*silver_chance) + (crop.get_sell(2)*gold_chance);
+			var min_revenue = crop.get_sell(0);
+			var max_revenue = (min_revenue*regular_chance) + (crop.get_sell(1)*silver_chance) + (crop.get_sell(2)*gold_chance);
 			
 			// Tiller perk
-			if (planner.player.tiller) max_revenue *= 1.1;
+			if (planner.player.tiller){
+				min_revenue *= 1.1;
+				max_revenue *= 1.1;
+			}
 			
-			self.revenue.min = Math.floor(min_sale * self.yield.min);
-			self.revenue.max = Math.floor(max_revenue * self.yield.max);
+			self.revenue.min = Math.floor(min_revenue) * self.yield.min;
+			self.revenue.max = Math.floor(max_revenue) * self.yield.max;
 			self.cost = crop.buy * plan.amount;
 			
 			// Regrowth
